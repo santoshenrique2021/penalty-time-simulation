@@ -1,0 +1,172 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "75fb95a3-cd72-49de-90d2-a2756bc25162",
+   "metadata": {},
+   "source": [
+    "# Monte Carlo Simulation of the Penalty Time\n",
+    "\n",
+    "This code presents a Monte Carlo simulation of penalty time considering six different sample sizes. The output is a data frame that includes the number of failures and the penalty time for each simulation."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "e23bef57-0ffe-438c-8f1f-a1c2d1a59e1a",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Libraries\n",
+    "import numpy as np #scientific computing\n",
+    "import pandas as pd #data analysis"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "c121f5be-a4a8-4d41-9621-dd1a9fa44ead",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "######################################################\n",
+    "#Model's Parameters (Santos & Nepomuceno, 2025)\n",
+    "######################################################\n",
+    "lambda_model = 0.0008 #equipment failure rate (per hour)\n",
+    "mi_model = 0.02       #mean repair rate (per hour)\n",
+    "tau = 70              #maximum penalty-free maintenance time (hours)\n",
+    "l_residual = 36500    #coverage period (hours)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "387a7b15-f723-41d9-96d8-fb901edd7548",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Monte Carlo sample sizes\n",
+    "sample_sizes = [500, 1000, 2000, 5000, 10000, 50000]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "aa22fa47-7fe6-4d03-9572-e6293963edbe",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Random seed for scientific reproducibility\n",
+    "np.random.seed(42) "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "id": "f9a05a97-b5b1-4f51-a76a-fda06e6f6846",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "File Generated: simulation_M_500.csv\n",
+      "File Generated: simulation_M_1000.csv\n",
+      "File Generated: simulation_M_2000.csv\n",
+      "File Generated: simulation_M_5000.csv\n",
+      "File Generated: simulation_M_10000.csv\n",
+      "File Generated: simulation_M_50000.csv\n"
+     ]
+    }
+   ],
+   "source": [
+    "#Iteration over sample sizes\n",
+    "for M in sample_sizes:\n",
+    "    \n",
+    "    # Initialize arrays to store simulation results\n",
+    "    penalties_vector = np.zeros(M)\n",
+    "    failures_vector = np.zeros(M, dtype=int)\n",
+    "\n",
+    "    # Monte Carlo simulation loop\n",
+    "    for i in range(M):\n",
+    "        # Generate the total number of failures over the coverage period (Poisson Process)\n",
+    "        n_failures = np.random.poisson(lambda_model * l_residual) \n",
+    "        failures_vector[i] = n_failures  \n",
+    "\n",
+    "        # Calculate penalty if failures occur\n",
+    "        if n_failures > 0:\n",
+    "            # Generate individual repair times (Exponential distribution)\n",
+    "            # Note: NumPy uses scale = 1/rate for the exponential distribution\n",
+    "            repair_times = np.random.exponential(scale=(1 / mi_model), size=n_failures) \n",
+    "            \n",
+    "            # Compute total penalty considering the tolerance threshold (Tau)\n",
+    "            penalty = np.sum(np.maximum(0, repair_times - tau)) \n",
+    "            penalties_vector[i] = penalty\n",
+    "\n",
+    "    # Structure the results into a DataFrame\n",
+    "    df_results = pd.DataFrame({\n",
+    "        'Iteration': np.arange(1, M + 1),\n",
+    "        'Failures_N': failures_vector,\n",
+    "        'Penalty_Time': penalties_vector\n",
+    "    })\n",
+    "\n",
+    "    # Export results to CSV\n",
+    "    df_results.to_csv(f\"simulation_M_{M}.csv\", index=False)\n",
+    "    print(f\"File Generated: simulation_M_{M}.csv\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "c3805843-5224-440e-9564-8af0a6f901ed",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "2d1dc067-59f9-40e7-9ae7-aedbb486ae96",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "818565d2-1c76-4bd4-97ec-ec8149c9828d",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "e3d97d2e-888c-4ded-94b6-d4e0432298c5",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.11.15"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

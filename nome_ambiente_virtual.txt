@@ -1,0 +1,2 @@
+Ambiente Virtual
+conda activate simulation_model
